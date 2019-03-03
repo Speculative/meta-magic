@@ -25,22 +25,28 @@ def show_modal(width, height, parent_window):
     return modal_panel
 
 
+def show_level(window, level):
+    for row in range(len(level)):
+        for col in range(len(level[0])):
+            if level[row][col]:
+                window.addch(row+1, col+1, '#')
+            else:
+                window.addch(row+1, col+1, '.')
+
+
 def main(stdscr):
     curses.curs_set(0)
     stdscr.resize(20, 80)
-    stdscr.border()
+    blank_window(stdscr)
 
-    left_window = curses.newwin(20, 10, 0, 0)
-    left_panel = curses.panel.new_panel(left_window)
-    left_panel.top()
-    curses.panel.update_panels()
-    blank_window(left_window)
+    level = [[False for col in range(78)] for row in range(18)]
+    level[0] = [True for col in range(78)]
+    level[17] = [True for col in range(78)]
+    for row in range(1, 17):
+        level[row][0] = True
+        level[row][77] = True
+    show_level(stdscr, level)
 
-    modal = show_modal(8, 3, left_window)
-    modal.window().addstr(1, 2, "hello")
-    modal.window().refresh()
-
-    stdscr.refresh()
     stdscr.getkey()
 
 
