@@ -29,9 +29,45 @@ def show_level(window, level):
     for row in range(len(level)):
         for col in range(len(level[0])):
             if level[row][col]:
-                window.addch(row+1, col+1, '#')
+                window.addch(row + 1, col + 1, "#")
             else:
-                window.addch(row+1, col+1, '.')
+                window.addch(row + 1, col + 1, ".")
+
+
+def show_player(window, player_pos):
+    p_row, p_col = player_pos
+    window.addch(p_row + 1, p_col + 1, '@')
+
+
+MOVES = {
+    'h': (0, -1),
+    'j': (1, 0),
+    'k': (-1, 0),
+    'l': (0, 1),
+    'y': (-1, -1),
+    'u': (-1, 1),
+    'n': (1, -1),
+    'm': (1, 1),
+}
+
+def move_player(key, game_state):
+    level = game_state['level']
+
+    curr_row, curr_col = game_state['player_pos']
+    move_row, move_col = MOVES[key]
+    next_row = curr_row + move_row
+    next_col = curr_col + move_col
+
+    if (0 <= next_row < len(level)
+        and 0 <= next_col < len(level[0])
+        and not level[next_row][next_col]):
+        game_state['player_pos'] = (next_row, next_col)
+
+def handle_key(key, game_state):
+    if key in MOVES:
+        move_player(key, game_state)
+    elif key == 'q':
+        game_state['quit'] = True
 
 
 def main(stdscr):
@@ -45,9 +81,21 @@ def main(stdscr):
     for row in range(1, 17):
         level[row][0] = True
         level[row][77] = True
-    show_level(stdscr, level)
 
-    stdscr.getkey()
+    game_state = {
+        'level': level,
+        'player_pos': (10, 40),
+        'quit': False
+    }
+
+    next_key = None
+    while True:
+        handle_key(next_key, game_state)
+        if game_state['quit']:
+            break
+        show_level(stdscr, game_state['level'])
+        show_player(stdscr, game_state['player_pos'])
+        next_key = stdscr.getkey()
 
 
 curses.wrapper(main)
