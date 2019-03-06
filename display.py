@@ -1,6 +1,7 @@
 import curses
 import curses.panel
 from math import floor, ceil
+import enemies
 
 debug_window = None
 main_window = None
@@ -119,3 +120,14 @@ def show_player(window, window_transform, player_pos):
     col = p_col + col_off
     window.addch(row + 1, col + 1, "@")
 
+
+def show_visible_enemies(window, window_transform, spawned_enemies):
+    max_row, max_col = window.getmaxyx()
+    for enemy in spawned_enemies:
+        _, enemy_type, _, enemy_pos = enemy
+        e_row, e_col = enemy_pos
+        row_off, col_off = window_transform
+        row = e_row + row_off
+        col = e_col + col_off
+        if (0 <= row + 1 < max_row) and (0 <= col + 1 < max_col):
+            window.addch(row + 1, col + 1, enemies.ENEMY_TYPES[enemy_type]["icon"])

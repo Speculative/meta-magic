@@ -14,6 +14,7 @@ def main(stdscr):
         "level": level.make_room(20, 80),
         "player_pos": (1, 1),
         "mode": "normal",
+        "enemies": {},
         "quit": False,
     }
 
@@ -29,6 +30,9 @@ def main(stdscr):
             stdscr, game_state["level"], game_state["player_pos"]
         )
         display.show_player(stdscr, window_transform, game_state["player_pos"])
+        display.show_visible_enemies(
+            stdscr, window_transform, game_state["enemies"].values()
+        )
 
         next_key = stdscr.getkey()
 

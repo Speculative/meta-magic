@@ -1,7 +1,13 @@
+import enemies
+
+enemy_id = 0
+
 # Normal mode
 def normal_handle_key(key, game_state):
     if key in MOVES:
         move_player(key, game_state)
+    if key == "s":
+        spawn_enemy(game_state, (2, 2), "zombie")
     elif key == "q":
         game_state["quit"] = True
 
@@ -36,9 +42,29 @@ def move_player(key, game_state):
         game_state["player_pos"] = (next_row, next_col)
 
 
+def spawn_enemy(game_state, position, enemy_type):
+    global enemy_id
+    game_state["enemies"][enemy_id] = (
+        enemy_id,
+        enemy_type,
+        enemies.ENEMY_TYPES[enemy_type]["init_health"],
+        position,
+    )
+    enemy_id += 1
+
+
 # Move time forward by one turn
 def tick_forward(game_state):
-    pass
+    tick_enemies(game_state)
+
+
+def tick_enemies(game_state):
+    for enemy in game_state["enemies"].values():
+        enemy_id, enemy_type, _, _ = enemy
+        behaviors = enemies.ENEMY_TYPES[enemy_type]["behaviors"]
+        for behavior in behaviors:
+            if behavior(game_state, enemy):
+                break
 
 
 # Organize everything in one update function

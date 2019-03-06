@@ -1,3 +1,5 @@
+import math
+
 CARDINAL = {"N": (-1, 0), "S": (1, 0), "E": (0, 1), "W": (0, -1)}
 
 
@@ -51,7 +53,7 @@ def neighbors(level, loc):
 def distance_map(level, goal):
     goal_row, goal_col = goal
     rows, cols = dimensions(level)
-    weights = [[-1 for col in range(cols)] for row in range(rows)]
+    weights = [[math.inf for col in range(cols)] for row in range(rows)]
     weights[goal_row][goal_col] = 0
     frontier = neighbors(level, goal)
     while len(frontier) > 0:
@@ -60,10 +62,8 @@ def distance_map(level, goal):
         node_terrain = level_get(level, node)
         # skip wall tiles
         if not node_terrain:
-            lowest = sorted(filter(lambda n: n != -1, neighbor_values(weights, node)))[
-                0
-            ]
-            if node_weight == -1 or node_weight > lowest + 1:
+            lowest = sorted(neighbor_values(weights, node))[0]
+            if node_weight > lowest + 1:
                 level_set(weights, node, lowest + 1)
                 frontier.extend(neighbors(level, node))
 
@@ -80,7 +80,7 @@ def print_room(room):
 def print_weights(weights):
     weights = map(
         lambda row: map(
-            lambda cell: "#" if cell == -1 else 9 if cell > 9 else cell, row
+            lambda cell: "#" if cell == math.inf else 9 if cell > 9 else cell, row
         ),
         weights,
     )
