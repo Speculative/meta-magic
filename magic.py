@@ -3,6 +3,7 @@ import curses.panel
 import time
 from math import floor, ceil
 import display
+import level
 
 MOVES = {
     "h": (0, -1),
@@ -39,21 +40,10 @@ def handle_key(key, game_state):
         game_state["quit"] = True
 
 
-def make_room(rows, cols):
-    level = [[False for col in range(cols)] for row in range(rows)]
-    level[0] = [True for col in range(cols)]
-    level[rows - 1] = [True for col in range(cols)]
-    for row in range(1, rows - 1):
-        level[row][0] = True
-        level[row][cols - 1] = True
-    return level
-
-
 def main(stdscr):
     display.init_display(stdscr)
 
-    level = make_room(20, 80)
-    game_state = {"level": level, "player_pos": (1, 1), "quit": False}
+    game_state = {"level": level.make_room(20, 80), "player_pos": (1, 1), "quit": False}
 
     next_key = None
     while True:
@@ -63,10 +53,10 @@ def main(stdscr):
 
         display.begin_render()
 
-        level_off, window_off = display.show_level(
+        window_transform = display.show_level(
             stdscr, game_state["level"], game_state["player_pos"]
         )
-        display.show_player(stdscr, level_off, window_off, game_state["player_pos"])
+        display.show_player(stdscr, window_transform, game_state["player_pos"])
 
         next_key = stdscr.getkey()
 

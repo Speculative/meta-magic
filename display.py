@@ -37,13 +37,10 @@ def begin_render():
     blank_window(debug_window)
 
 
-def show_modal(width, height, parent_window):
-    parent_height, parent_width = parent_window.getmaxyx()
+def show_modal(rows, cols, parent_window):
+    parent_rows, parent_cols = parent_window.getmaxyx()
     modal_window = curses.newwin(
-        height,
-        width,
-        int((parent_height / 2) - height / 2),
-        int((parent_width / 2) - width / 2),
+        rows, cols, int((parent_rows - rows) / 2), int((parent_cols - cols) / 2)
     )
     modal_panel = curses.panel.new_panel(modal_window)
     modal_panel.top()
@@ -111,14 +108,14 @@ def show_level(window, level, anchor):
                 terrain = "#"
             window.addch(win_row + 1, win_col + 1, terrain)
 
-    return ((row_min, col_min), (win_row_off, win_col_off))
+    # Transform from level coordinates to window coordinates
+    return (win_row_off - row_min, win_col_off - col_min)
 
 
-def show_player(window, level_off, window_off, player_pos):
+def show_player(window, window_transform, player_pos):
     p_row, p_col = player_pos
-    l_row, l_col = level_off
-    w_row, w_col = window_off
-    row = p_row - l_row + w_row
-    col = p_col - l_col + w_col
+    row_off, col_off = window_transform
+    row = p_row + row_off
+    col = p_col + col_off
     window.addch(row + 1, col + 1, "@")
 
