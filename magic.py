@@ -5,6 +5,7 @@ from math import floor, ceil
 import display
 import level
 import state
+import binascii
 
 
 def main(stdscr):
@@ -15,6 +16,9 @@ def main(stdscr):
         "player_pos": (1, 1),
         "mode": "normal",
         "enemies": {},
+        "spell": ("", ""),
+        "target": None,
+        "focused_slot": 0,
         "quit": False,
     }
 
@@ -33,6 +37,11 @@ def main(stdscr):
         display.show_visible_enemies(
             stdscr, window_transform, game_state["enemies"].values()
         )
+
+        payload, transport = game_state["spell"]
+        if next_key != None:
+            display.show_debug(3, str(binascii.hexlify(next_key.encode())))
+        display.show_debug(4, payload, transport)
 
         next_key = stdscr.getkey()
 

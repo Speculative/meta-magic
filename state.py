@@ -6,12 +6,15 @@ enemy_id = 0
 def normal_handle_key(key, game_state):
     if key in MOVES:
         move_player(key, game_state)
-    if key == "s":
+        tick_forward(game_state)
+    elif key == "c":
+        game_state["mode"] = "cast"
+        game_state["target"] = game_state["player_pos"]
+        game_state["spell"] = ("", "")
+    elif key == "s":
         spawn_enemy(game_state, (2, 2), "zombie")
     elif key == "q":
         game_state["quit"] = True
-
-    tick_forward(game_state)
 
 
 MOVES = {
@@ -26,20 +29,24 @@ MOVES = {
 }
 
 
-def move_player(key, game_state):
-    level = game_state["level"]
-
-    curr_row, curr_col = game_state["player_pos"]
+def try_move(key, pos, terrain):
+    curr_row, curr_col = pos
     move_row, move_col = MOVES[key]
-    next_row = curr_row + move_row
-    next_col = curr_col + move_col
+    target_row = curr_row + move_row
+    target_col = curr_col + move_col
 
     if (
-        0 <= next_row < len(level)
-        and 0 <= next_col < len(level[0])
-        and not level[next_row][next_col]
+        0 <= target_row < len(terrain)
+        and 0 <= target_col < len(terrain[0])
+        and not terrain[target_row][target_col]
     ):
-        game_state["player_pos"] = (next_row, next_col)
+        return (target_row, target_col)
+
+
+def move_player(key, game_state):
+    game_state["player_pos"] = try_move(
+        key, game_state["player_pos"], game_state["level"]
+    )
 
 
 def spawn_enemy(game_state, position, enemy_type):
@@ -51,6 +58,50 @@ def spawn_enemy(game_state, position, enemy_type):
         position,
     )
     enemy_id += 1
+
+
+# Casting mode
+def cast_handle_key(key, game_state):
+    if key == "\n" and valid_spell(game_state):
+        game_state["mode"] = "target"
+    elif key == "\x1b":
+        game_state["mode"] = "normal"
+        game_state["spell"] = ("", "")
+    elif key == "\t":
+        game_state["focused_slot"] = (game_state["focused_slot"] + 1) % 2
+    elif key == "\x7f":
+        payload, transport = game_state["spell"]
+        if game_state["focused_slot"] == 0:
+            payload = payload[:-1]
+        else:
+            transport = transport[:-1]
+        game_state["spell"] = (payload, transport)
+    elif key.isalpha():
+        payload, transport = game_state["spell"]
+        if game_state["focused_slot"] == 0:
+            game_state["spell"] = (payload + key, transport)
+        else:
+            game_state["spell"] = (payload, transport + key)
+
+
+def valid_spell(game_state):
+    return True
+
+
+# Targeting mode
+def target_handle_key(key, game_state):
+    if key in MOVES:
+        move_target(key, game_state)
+    elif key == "\n" and valid_target(game_state):
+        tick_forward(game_state)
+
+
+def move_target(key, game_state):
+    game_state["target"] = try_move(key, game_state["target"], game_state["level"])
+
+
+def valid_target(game_state):
+    return True
 
 
 # Move time forward by one turn
@@ -68,7 +119,11 @@ def tick_enemies(game_state):
 
 
 # Organize everything in one update function
-MODE_HANDLERS = {"normal": normal_handle_key}
+MODE_HANDLERS = {
+    "normal": normal_handle_key,
+    "cast": cast_handle_key,
+    "target": target_handle_key,
+}
 
 
 def handle_key(key, game_state):
