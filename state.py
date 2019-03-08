@@ -1,4 +1,5 @@
 import enemies
+import spells
 
 enemy_id = 0
 
@@ -62,8 +63,9 @@ def spawn_enemy(game_state, position, enemy_type):
 
 # Casting mode
 def cast_handle_key(key, game_state):
-    if key == "\n" and valid_spell(game_state):
+    if key == "\n" and spells.valid_spell(game_state):
         game_state["mode"] = "target"
+        game_state["target"] = game_state["player_pos"]
     elif key == "\x1b":
         game_state["mode"] = "normal"
         game_state["spell"] = ("", "")
@@ -84,24 +86,19 @@ def cast_handle_key(key, game_state):
             game_state["spell"] = (payload, transport + key)
 
 
-def valid_spell(game_state):
-    return True
-
-
 # Targeting mode
 def target_handle_key(key, game_state):
     if key in MOVES:
         move_target(key, game_state)
-    elif key == "\n" and valid_target(game_state):
+    elif key == "\n" and spells.valid_target(game_state):
+        # where the spell would do something
+        game_state["spell"] = ("", "")
+        game_state["mode"] = "normal"
         tick_forward(game_state)
 
 
 def move_target(key, game_state):
     game_state["target"] = try_move(key, game_state["target"], game_state["level"])
-
-
-def valid_target(game_state):
-    return True
 
 
 # Move time forward by one turn

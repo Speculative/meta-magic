@@ -17,7 +17,7 @@ def main(stdscr):
         "mode": "normal",
         "enemies": {},
         "spell": ("", ""),
-        "target": None,
+        "target": (0, 0),
         "focused_slot": 0,
         "quit": False,
     }
@@ -38,10 +38,11 @@ def main(stdscr):
             stdscr, window_transform, game_state["enemies"].values()
         )
 
+        display.show_debug(3, game_state["mode"])
         payload, transport = game_state["spell"]
-        if next_key != None:
-            display.show_debug(3, str(binascii.hexlify(next_key.encode())))
         display.show_debug(4, payload, transport)
+        target_row, target_col = game_state["target"]
+        display.show_debug(5, target_row, target_col)
 
         next_key = stdscr.getkey()
 
