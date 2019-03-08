@@ -18,6 +18,7 @@ def main(stdscr):
         "enemies": {},
         "spell": ("", ""),
         "target": (0, 0),
+        "target_direction": (0, 0),
         "focused_slot": 0,
         "quit": False,
     }

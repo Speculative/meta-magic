@@ -66,6 +66,7 @@ def cast_handle_key(key, game_state):
     if key == "\n" and spells.valid_spell(game_state):
         game_state["mode"] = "target"
         game_state["target"] = game_state["player_pos"]
+        game_state["focused_slot"] = 0
     elif key == "\x1b":
         game_state["mode"] = "normal"
         game_state["spell"] = ("", "")
@@ -91,9 +92,16 @@ def target_handle_key(key, game_state):
     if key in MOVES:
         move_target(key, game_state)
     elif key == "\n" and spells.valid_target(game_state):
-        # where the spell would do something
-        game_state["spell"] = ("", "")
+        game_state["mode"] = "target_direction"
+
+
+# Target direction mode
+def target_direction_handle_key(key, game_state):
+    if key in MOVES:
+        game_state["target_direction"] = MOVES[key]
+    elif key == "\n":
         game_state["mode"] = "normal"
+        spells.cast_spell(game_state)
         tick_forward(game_state)
 
 
@@ -107,6 +115,17 @@ def tick_forward(game_state):
 
 
 def tick_enemies(game_state):
+    # Remove dead enemies
+    dead = []
+    for enemy in game_state["enemies"].values():
+        enemy_id, _, health, _ = enemy
+        if health <= 0:
+            dead.append(enemy_id)
+
+    for dead_enemy_id in dead:
+        del game_state["enemies"][dead_enemy_id]
+
+    # Let remaining enemies do their turn behaviors
     for enemy in game_state["enemies"].values():
         enemy_id, enemy_type, _, _ = enemy
         behaviors = enemies.ENEMY_TYPES[enemy_type]["behaviors"]
@@ -120,6 +139,7 @@ MODE_HANDLERS = {
     "normal": normal_handle_key,
     "cast": cast_handle_key,
     "target": target_handle_key,
+    "target_direction": target_direction_handle_key,
 }
 
 
